@@ -12,6 +12,7 @@ from graphql import (
     GraphQLObjectType,
     GraphQLSchema,
 )
+from graphql import version_info as core_version_info
 
 from graphql_relay import mutation_with_client_mutation_id
 
@@ -53,16 +54,21 @@ def describe_mutation_with_client_mutation_id():
               }
             }
             """
+        if core_version_info >= (3, 3):
+            message = (
+                "Argument 'Mutation.someMutation(input:)'"
+                " of type 'SomeMutationInput!' is required,"
+                " but it was not provided."
+            )
+        else:
+            message = (
+                "Field 'someMutation' argument 'input'"
+                " of type 'SomeMutationInput!' is required,"
+                " but it was not provided."
+            )
         assert graphql_sync(schema, source) == (
             None,
-            [
-                {
-                    "message": "Field 'someMutation' argument 'input'"
-                    " of type 'SomeMutationInput!' is required,"
-                    " but it was not provided.",
-                    "locations": [(3, 15)],
-                }
-            ],
+            [{"message": message, "locations": [(3, 15)]}],
         )
 
     def returns_the_same_client_mutation_id():
